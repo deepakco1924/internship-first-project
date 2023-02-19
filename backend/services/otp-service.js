@@ -19,8 +19,5 @@ exports.sendBySms = async (phone, otp) => {
 };
 exports.verifyOtp = (hashedOtp, data) => {
   let computedHash = hashServices.hashOtp(data);
-  if (computedHash === hashedOtp) {
-    return true;
-  }
-  return false;
+  return computedHash === hashedOtp;
 };
