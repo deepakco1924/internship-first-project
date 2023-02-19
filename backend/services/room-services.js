@@ -9,7 +9,12 @@ exports.create = async (data) => {
   });
   return room;
 };
-
+exports.getRoom = async (roomId) => {
+  return await Room.findOne({ _id: roomId })
+    .populate("speakers")
+    .populate("ownerId")
+    .exec();
+};
 exports.getAllRooms = async (types) => {
   console.log(types);
   const rooms = await Room.find({ roomType: { $in: types } })

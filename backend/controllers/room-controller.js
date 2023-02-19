@@ -23,8 +23,12 @@ exports.createRoom = async (req, res, next) => {
 };
 
 exports.index = async (req, res, next) => {
-  const rooms = await roomServices
-    .getAllRooms(["open"])
- 
+  const rooms = await roomServices.getAllRooms(["open"]);
+
   res.status(200).json(rooms);
+};
+
+exports.getRoomById = async (req, res, next) => {
+  const room = await roomServices.getRoom(req.params.roomId);
+  res.status(200).json(room);
 };
