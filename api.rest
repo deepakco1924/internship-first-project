@@ -2,8 +2,8 @@
 POST http://localhost:5500/api/verify-otp HTTP/1.1
 Content-Type: application/json
 
-{
-    "phone":"+919888960320",
-    "hash":"6c4c0c886af11b6829c007fa6350c4fa78be09b85520dfffe856d326a3f15207.1676781981132",
-    "otp":9455
+ {
+  "hash": "d0187528f1cd74d887f6d4d55ab6ac9d086f1411302c5cd7530f068e38f9ed4c.1676784597156",
+  "phone": "+919888960320",
+  "otp:4876
 }

@@ -24,6 +24,7 @@ exports.sendOtp = async (req, res, next) => {
       hash: `${hash}.${expires}`,
       phone: phone,
       message: "otp send succesfully",
+      otp: otp,
     });
   } catch (err) {
     console.log(err);
@@ -67,10 +68,97 @@ exports.verifyOtp = async (req, res, next) => {
     activated: false,
   });
   console.log({ accessToken, refreshToken });
+
+  await tokenServices.storeRefreshToken(refreshToken, user._id);
   res.cookie("refreshToken", refreshToken, {
     maxAge: 1000 * 60 * 60 * 24 * 30,
-    httpOnly: true,
   });
-  // const userDto = new UserDto(user);
-  res.json({ accessToken });
+  res.cookie("accessToken", accessToken, {
+    maxAge: 1000 * 60 * 60 * 24 * 30,
+  });
+
+  const userData = {
+    _id: user._id,
+    activated: user.activated,
+    createdAt: user.createdAt,
+    phone: user.phone,
+  };
+  res.json({ user: userData, auth: true });
+};
+
+exports.refresh = async (req, res, next) => {
+  //get refresh tokens from our cokkies
+  const { refreshToken: refreshTokenFromCookie } = req.cookies;
+
+  //checing if toke valid or not
+  let userData;
+  try {
+    userData = await tokenServices.verifyRefreshToken(refreshTokenFromCookie);
+  } catch (err) {
+    return res.status(401).json({ message: "invalid token" });
+  }
+
+  //check if token is in database
+  try {
+    const token = await tokenServices.findRefreshToken(
+      userData._id,
+      refreshTokenFromCookie
+    );
+    if (!token) {
+      return res.status(401).json({ message: "invalid token" });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: "internal error" });
+  }
+
+  //check valid user;
+  const user = await userServices.findUser({ _id: userData._id });
+  if (!user) {
+    return res.status(404).json({ message: "no user found" });
+  }
+  //generate our new token accestoekn and refreshtook
+  const { accessToken, refreshToken } = tokenServices.generateTokens({
+    _id: userData._id,
+  });
+
+  //update refresh token;
+  try {
+    await tokenServices.updateRefreshToken(userData._id, refreshToken);
+  } catch (err) {
+    return res.status(500).json({ message: "internal error" });
+  }
+
+  //put in cookie
+  res.cookie("refreshToken", refreshToken, {
+    maxAge: 1000 * 60 * 60 * 24 * 30,
+  });
+  res.cookie("accessToken", accessToken, {
+    maxAge: 1000 * 60 * 60 * 24 * 30,
+  });
+  //response
+  const userDataResponse = {
+    _id: user._id,
+    avatar: user.avatar,
+    name: user.name,
+    phone: user.phone,
+    activated: user.activated,
+    createdAt: user.createdAt,
+  };
+  console.log("token refreshed bro");
+  res.status(201).json({
+    user: userDataResponse,
+    auth: true,
+  });
+};
+
+exports.logout = async (req, res, next) => {
+  //delete refresh token
+  const { refreshToken } = req.cookies;
+  await tokenServices.removeToken(refreshToken);
+
+  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken");
+  
+  res.json({user:null,auth:false,message:"user logout succesfully"})
+  //delete cookie
 };

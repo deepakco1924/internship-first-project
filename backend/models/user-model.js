@@ -12,6 +12,16 @@ const userSchema = new Schema(
       required: false,
       default: false,
     },
+    avatar: {
+      type: String,
+      required: false,
+      default:
+        "https://cdn.imgbin.com/5/3/4/imgbin-youtube-game-social-media-youtube-GzNMnq2ZwR3WRLj6y5J6srfsX.jpg",
+    },
+    name: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );
