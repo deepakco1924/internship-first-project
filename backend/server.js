@@ -36,18 +36,21 @@ const socketToUserMapping = {};
 
 io.on("connection", (socket) => {
   console.log("new connection ", socket.id);
+  //action.join join-room with roomId and user
   socket.on(ACTIONS.JOIN, (data) => {
     const { roomId, user } = data;
     ``;
     socketToUserMapping[socket.id] = user;
     //return map
     const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+    //clients emit  forec
     clients.forEach((clientSocketId) => {
       io.to(clientSocketId).emit(ACTIONS.ADD_PEER, {
         peerId: clientSocketId,
         createOffer: false,
         user: user,
       });
+      //
       socket.emit(ACTIONS.ADD_PEER, {
         peerId: clientSocketId,
         createOffer: true,
@@ -74,7 +77,7 @@ io.on("connection", (socket) => {
       sessionDescription,
     });
   });
-
+.
   //
   const leaveRoom = ({ roomId }) => {
     const { rooms } = socket;
@@ -83,11 +86,11 @@ io.on("connection", (socket) => {
       clients.forEach((clientId) => {
         io.to(clientId).emit(ACTIONS.REMOVE_PEER, {
           peerId: socket.id,
-          userId: socketToUserMapping[socket.id]?.id,
+          userId: socketToUserMapping[socket.id].id,
         });
         socket.emit(ACTIONS.REMOVE_PEER, {
           peerId: clientId,
-          userId: socketToUserMapping[clientId]?.id,
+          userId: socketToUserMapping[clientId].id,
         });
       });
       socket.leave(roomId);
